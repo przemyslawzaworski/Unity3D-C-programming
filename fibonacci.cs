@@ -3,8 +3,8 @@ using System.Collections;
 
 public class fibonacci : MonoBehaviour 
 {
-    public static int Fibonacci(int n)
-    {
+	public static int Fibonacci(int n)
+	{
 		int a = 0;
 		int b = 1;
 		int c = 0;
