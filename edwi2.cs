@@ -9,6 +9,8 @@ using System.Collections.Generic;
 public class edwi2 : MonoBehaviour
 {
 	public string link= "Set website link:";
+	public string k = "10";
+	public string t = "4";
 
 	public static bool IsNullOrWhiteSpace(string value)
 	{
@@ -29,7 +31,7 @@ public class edwi2 : MonoBehaviour
 		return temp.ToLower();
 	}
 
-	IEnumerator download_website(string url)
+	IEnumerator download_website(string url, int K, int T)
 	{
 		Directory.CreateDirectory("C:\\edwi2\\");
 		WWW www = new WWW(url);
@@ -37,10 +39,10 @@ public class edwi2 : MonoBehaviour
 		File.WriteAllText("C:\\edwi2\\edwi2.html", www.text);
 		string html = File.ReadAllText("C:\\edwi2\\edwi2.html");
 		File.WriteAllText("C:\\edwi2\\edwi2.txt", process_html(html));
-		sorting();
+		sorting(K,T);
 	}
 	
-	void sorting ()
+	void sorting (int K, int T)
 	{
 		string source = File.ReadAllText("C:\\edwi2\\edwi2.txt");
 		string[] words = source.Split(' ');
@@ -64,9 +66,12 @@ public class edwi2 : MonoBehaviour
 		}
 		var result = from pair in dictionary orderby pair.Value descending select pair;
 		List<string> output = new List<string>();
+		int processed = 0;
 		foreach (KeyValuePair<string, int> pair in result)
 		{
+			if (pair.Value < T) break;
 			output.Add(pair.Key.Trim()+" "+pair.Value);
+			if (++processed == K) break;
 		}
 		File.WriteAllLines("C:\\edwi2\\sorting.txt", output.ToArray());
 		Debug.Log("Sortowanie zakonczone!");
@@ -75,9 +80,15 @@ public class edwi2 : MonoBehaviour
 	void OnGUI() 
 	{
 		link = GUI.TextField(new Rect(10, 10, 400, 20), link, 100);
+		k = GUI.TextField(new Rect(420, 10, 60, 20), k, 10);
+		t = GUI.TextField(new Rect(500, 10, 60, 20), t, 10);
+		int K = 0;
+		Int32.TryParse(k, out K);
+		int T = 0;
+		Int32.TryParse(t, out T);
 		if (GUI.Button(new Rect(10, 70, 50, 50), "OK"))
 		{
-			StartCoroutine(download_website(link));
+			StartCoroutine(download_website(link,K,T));
 		}
 	}
 }
