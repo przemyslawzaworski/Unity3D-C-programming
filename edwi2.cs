@@ -48,6 +48,7 @@ public class edwi2 : MonoBehaviour
 		string[] words = source.Split(' ');
 		words = words.Where((s) => { return (0 != String.Compare(s, "")); }).ToArray();
 		words = words.Where(arg => !IsNullOrWhiteSpace(arg)).ToArray();
+		float poczatek = Time.realtimeSinceStartup; 
 		Array.Sort(words);
 		Dictionary<string, int> dictionary = new Dictionary<string, int>();
 		int num=1;
@@ -73,8 +74,9 @@ public class edwi2 : MonoBehaviour
 			output.Add(pair.Key.Trim()+" "+pair.Value);
 			if (++processed == K) break;
 		}
+		float koniec = Time.realtimeSinceStartup - poczatek;
 		File.WriteAllLines("C:\\edwi2\\sorting.txt", output.ToArray());
-		Debug.Log("Sortowanie zakonczone!");
+		Debug.Log("Sortowanie zakonczone! Czas trwania to: "+String.Format( "{0:0.000000}",koniec)+"  sekund.");
 	}
 
 	void OnGUI() 
