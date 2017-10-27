@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Text.RegularExpressions;
 using System.IO;
+using System.Text;
 
 public class edwi1 : MonoBehaviour
 {
@@ -30,6 +31,12 @@ public class edwi1 : MonoBehaviour
 		}
 	}	
 
+	string konwersja (string zawartosc)
+	{
+		byte[] bytes = Encoding.Default.GetBytes(zawartosc);
+		return  Encoding.UTF8.GetString(bytes);
+	}
+	
 	string process_html(string input)
 	{
 		string temp=Regex.Replace(input, "<.*?>", "");
@@ -41,8 +48,10 @@ public class edwi1 : MonoBehaviour
 	{
 		Directory.CreateDirectory("C:\\edwi1\\");
 		WWW www = new WWW(url);
-		yield return www;
-		System.IO.File.WriteAllText("C:\\edwi1\\edwi1.html", www.text);
+		yield return www;		
+		Encoding kod = System.Text.Encoding.GetEncoding("windows-1250");
+		string bla = kod.GetString(www.bytes);
+		System.IO.File.WriteAllText("C:\\edwi1\\edwi1.html", bla);
 		StartCoroutine(process_images(www.text));
 		string html = File.ReadAllText("C:\\edwi1\\edwi1.html");
 		System.IO.File.WriteAllText("C:\\edwi1\\edwi1.txt", process_html(html));
