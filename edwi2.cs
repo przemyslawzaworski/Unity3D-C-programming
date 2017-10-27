@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using System.Text;
 
 public class edwi2 : MonoBehaviour
 {
@@ -36,7 +37,9 @@ public class edwi2 : MonoBehaviour
 		Directory.CreateDirectory("C:\\edwi2\\");
 		WWW www = new WWW(url);
 		yield return www;
-		File.WriteAllText("C:\\edwi2\\edwi2.html", www.text);
+		Encoding kod = System.Text.Encoding.GetEncoding("windows-1250");
+		string bla = kod.GetString(www.bytes);
+		File.WriteAllText("C:\\edwi2\\edwi2.html", bla);
 		string html = File.ReadAllText("C:\\edwi2\\edwi2.html");
 		File.WriteAllText("C:\\edwi2\\edwi2.txt", process_html(html));
 		sorting(K,T);
