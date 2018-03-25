@@ -18,8 +18,8 @@ public class speed : MonoBehaviour
 		result = ComputeSpeed(item);
 	}
 	
-    void OnGUI() 
+	void OnGUI() 
 	{
-        GUI.Label(new Rect(10, 40, 200, 100), result.ToString());
-    }	
+		GUI.Label(new Rect(10, 40, 200, 100), result.ToString());
+	}
 }
