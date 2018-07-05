@@ -1,0 +1,61 @@
+******************************
+Call a function between scripts (both scripts have to be included to GameObjects).
+
+using UnityEngine;
+public class MainClass : MonoBehaviour 
+{
+	public static MainClass Instance;
+	private string caption = "OK";
+	
+	void Start () 
+	{
+		Instance = this;
+	}
+	
+	public void ShowMessage () 
+	{
+		Debug.Log(caption);
+	}
+}
+
+using UnityEngine;
+public class Execute : MonoBehaviour 
+{
+	void Update () 
+	{
+		if (Input.GetKeyDown("space"))
+		{
+			MainClass.Instance.ShowMessage();
+		}
+	}
+}
+
+******************************
+Call a function between scripts (both scripts have to be included to GameObjects).
+
+using UnityEngine;
+public class MainClass : MonoBehaviour 
+{
+	private string caption = "OK";
+	
+	public void ShowMessage () 
+	{
+		Debug.Log(caption);
+	}
+}
+
+using UnityEngine;
+public class Execute : MonoBehaviour 
+{
+	public GameObject Core;
+	
+	void Update () 
+	{
+		if (Input.GetKeyDown("space"))
+		{
+			Core.GetComponent<MainClass>().ShowMessage();
+		}
+	}
+}
+
+******************************
