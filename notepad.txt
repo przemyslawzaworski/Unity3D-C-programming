@@ -59,3 +59,32 @@ public class Execute : MonoBehaviour
 }
 
 ******************************
+Passing function as argument.
+
+using UnityEngine;
+public class delegates : MonoBehaviour 
+{
+
+	delegate void DelegateFunction();
+
+	void WaitForSeconds(float S, DelegateFunction F)
+	{
+		if (Time.time>=S) F();
+	}
+
+	void Compute()
+	{
+		float x = 1.23f;
+		for (int i=0;i<100000;i++)
+		{
+			x = Mathf.Sin(x) * Mathf.Sqrt(x);
+		}
+	}
+	
+	void Update () 
+	{
+		 WaitForSeconds(3, Compute);		
+	}
+}
+
+******************************
