@@ -58,8 +58,8 @@ public class footsteps : MonoBehaviour
 	{
 		try
 		{
-			isGrounded = hit.collider.gameObject.GetComponent<MeshCollider>() != null;
-			ID = hit.collider.gameObject.GetComponent<MeshCollider>().sharedMaterial.GetHashCode();
+			isGrounded = hit.collider != null;
+			ID = hit.collider.sharedMaterial.GetHashCode();
 		}
 		catch (Exception) { }
 	}
