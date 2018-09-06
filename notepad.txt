@@ -112,6 +112,7 @@ public class PrintMessageEditor : Editor
 		if(GUILayout.Button("Print")) PM.PrintText();
 	}
 }
+
 ******************************
 Transform hierarchy helper functions
 
@@ -139,6 +140,25 @@ void ReplaceMaterial (GameObject parent, string caption, Material input)
 	for (int i=0;i<table.Length;i++)
 	{
 		if (table[i].name.Contains(caption)) table[i].gameObject.GetComponent<Renderer>().material = input;   
+	}
+}
+
+******************************
+Create a prefab.
+
+using UnityEngine;
+using UnityEditor;
+public class MakePrefab : EditorWindow
+{
+	[MenuItem("Prefab/Make Prefab")]
+	static void MakePrefabNow()
+	{
+		foreach (GameObject source in Selection.gameObjects)	
+		{
+			string path = "Assets/" + source.name + ".prefab";
+			Object prefab = PrefabUtility.CreatePrefab(path, source);
+			PrefabUtility.ReplacePrefab(source, prefab, ReplacePrefabOptions.ConnectToPrefab);			
+		}
 	}
 }
 ******************************
