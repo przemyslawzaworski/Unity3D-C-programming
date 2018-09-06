@@ -88,3 +88,28 @@ public class delegates : MonoBehaviour
 }
 
 ******************************
+Execute script in editor mode (call function by pressing button)
+
+using UnityEngine;
+public class PrintMessage : MonoBehaviour 
+{
+	public void PrintText()
+	{
+		Debug.Log("Hello World !");
+	}
+}
+
+//Put script in Editor directory.
+using UnityEngine;
+using UnityEditor;
+[CustomEditor(typeof(PrintMessage))]
+public class PrintMessageEditor : Editor
+{
+	public override void OnInspectorGUI()
+	{
+		DrawDefaultInspector();    
+		PrintMessage PM = (PrintMessage)target;
+		if(GUILayout.Button("Print")) PM.PrintText();
+	}
+}
+******************************
