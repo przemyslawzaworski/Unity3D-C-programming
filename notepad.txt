@@ -113,8 +113,7 @@ public class PrintMessageEditor : Editor
 	}
 }
 ******************************
-
-// Transform hierarchy helper functions
+Transform hierarchy helper functions
 
 void DisableChild (GameObject parent, string caption)
 {
