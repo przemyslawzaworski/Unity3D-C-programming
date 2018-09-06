@@ -113,3 +113,33 @@ public class PrintMessageEditor : Editor
 	}
 }
 ******************************
+
+// Transform hierarchy helper functions
+
+void DisableChild (GameObject parent, string caption)
+{
+	Transform[] table = parent.GetComponentsInChildren<Transform>();
+	for (int i=0;i<table.Length;i++)
+	{
+		if (table[i].name.Contains(caption)) table[i].gameObject.SetActive(false);   
+	}
+}
+	
+void ReplaceMesh (GameObject parent, string caption, Mesh input)
+{
+	Transform[] table = parent.GetComponentsInChildren<Transform>();
+	for (int i=0;i<table.Length;i++)
+	{
+		if (table[i].name.Contains(caption)) table[i].gameObject.GetComponent<MeshFilter>().mesh = input;   
+	}
+}
+
+void ReplaceMaterial (GameObject parent, string caption, Material input)
+{
+	Transform[] table = parent.GetComponentsInChildren<Transform>();
+	for (int i=0;i<table.Length;i++)
+	{
+		if (table[i].name.Contains(caption)) table[i].gameObject.GetComponent<Renderer>().material = input;   
+	}
+}
+******************************
