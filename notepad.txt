@@ -161,4 +161,24 @@ public class MakePrefab : EditorWindow
 		}
 	}
 }
+
+******************************
+Move object in the direction of camera.
+
+using UnityEngine;
+public class CameraDirection : MonoBehaviour 
+{
+	public Camera MC;
+	public GameObject T;
+	public float factor = 2.0f;
+	
+	void Update () 
+	{
+		if (Input.GetKey(KeyCode.I)) T.transform.position += MC.transform.forward * factor * Time.deltaTime;
+		if (Input.GetKey(KeyCode.K)) T.transform.position -= MC.transform.forward * factor * Time.deltaTime;
+		if (Input.GetKey(KeyCode.L)) T.transform.position += MC.transform.right * factor * Time.deltaTime;
+		if (Input.GetKey(KeyCode.J)) T.transform.position -= MC.transform.right * factor * Time.deltaTime;
+	}
+}
+
 ******************************
