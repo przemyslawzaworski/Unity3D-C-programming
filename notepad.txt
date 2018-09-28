@@ -182,3 +182,17 @@ public class CameraDirection : MonoBehaviour
 }
 
 ******************************
+Create bigger array from smaller ones.
+
+int[,] MakeArray (int[,] A, int[,] B, int[,] C, int[,] D)
+{
+	int[,] E = new int[A.GetLength(0)*2,A.GetLength(1)*2];
+	System.Array.Copy(A, 0, E, 0, A.Length);
+	System.Array.Copy(B, 0, E, A.Length, B.Length);
+	System.Array.Copy(C, 0, E, A.Length+B.Length, C.Length);
+	System.Array.Copy(D, 0, E, A.Length+B.Length+C.Length, D.Length);
+	return E;
+}
+
+
+******************************
