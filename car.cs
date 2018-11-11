@@ -16,10 +16,10 @@ public class car : MonoBehaviour
 	public Vector3 center;
 	[Tooltip("Application point of the suspension and tire forces measured from the base of the resting wheel.")]		
 	[Range(-1.0f,1.0f)]	
-	public float forceAppPointDistance = 0.0f;
+	public float forceAppPointDistance = 0.5f;
 	[Tooltip("The mass of the wheel, expressed in kilograms.")]
-	[Range(10.0f,100.0f)]	
-	public float mass = 20.0f;
+	[Range(10.0f,500.0f)]	
+	public float mass = 100.0f;
 	[Tooltip("Motor torque on the wheel axle expressed in Newton metres.")]	
 	[Range(10.0f,1000.0f)]	
 	public float motorTorque = 400.0f;
@@ -33,8 +33,8 @@ public class car : MonoBehaviour
 	[Range(0.0f,1.0f)]		
 	public float suspensionDistance = 0.3f;
 	[Tooltip("The damping rate of the wheel.")]	
-	[Range(0.0f,2.0f)]	
-	public float wheelDampingRate = 0.25f;
+	[Range(0.0f,20.0f)]	
+	public float wheelDampingRate = 8.0f;
 	
 	[Header("Wheel Collider Forward Friction")]
 	[Range(0.0f,10.0f)]
@@ -73,12 +73,13 @@ public class car : MonoBehaviour
 	public int stepsBelowThreshold = 22;
 	public int stepsAboveThreshold = 2;
 	
-	[Header("Vehicle Rigidbody")]	
+	[Header("Vehicle Rigidbody")]
+	public GameObject Vehicle;
 	public Rigidbody rigidBody;
 	public Vector3 CenterOfMass;
-	public float DownForce = 100.0f;
+	public float DownForce = 1.0f;
 		
-	public void ApplyLocalPositionToVisuals(WheelCollider collider)
+	public void SetGeometry(WheelCollider collider)
 	{
 		if (collider.transform.childCount == 0) return;
 		Transform visualWheel = collider.transform.GetChild(0); 
@@ -95,8 +96,15 @@ public class car : MonoBehaviour
 		float speed = Vector3.Magnitude(rigidBody.velocity) * 2.0f;
 		float ratio = speed / x;
 		temp *= 1.0F - ratio;
-		Debug.Log(Mathf.Clamp(temp, 15.0F, x));
 		return Mathf.Clamp(temp, 15.0F, x);
+	}
+	
+	void Turbo (WheelCollider w)
+	{
+		float rot = Vehicle.transform.rotation.eulerAngles.x;
+		if (rot>180) rot=rot-360.0f;
+		rot = Mathf.Abs(rot);
+		w.motorTorque = w.motorTorque + w.motorTorque * (Mathf.Pow(rot,1.0f+rot*0.008f) * 0.045f);		
 	}
 	
 	public void FixedUpdate()
@@ -134,7 +142,8 @@ public class car : MonoBehaviour
 			suspensionSpring.damper = damper;          
 			suspensionSpring.targetPosition = targetPosition;
 			frontWheels[i].suspensionSpring = suspensionSpring;	
-			ApplyLocalPositionToVisuals(frontWheels[i]);
+			SetGeometry(frontWheels[i]);
+			Turbo(frontWheels[i]);
 		}
 		for (int j=0;j<rearWheels.Length;j++)
 		{
@@ -163,7 +172,8 @@ public class car : MonoBehaviour
 			suspensionSpring.damper = damper;          
 			suspensionSpring.targetPosition = targetPosition;
 			rearWheels[j].suspensionSpring = suspensionSpring;
-			ApplyLocalPositionToVisuals(rearWheels[j]);
+			SetGeometry(rearWheels[j]);
+			Turbo(rearWheels[j]);
 		}
 	}
 
