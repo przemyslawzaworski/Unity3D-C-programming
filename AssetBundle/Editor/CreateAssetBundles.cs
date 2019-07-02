@@ -47,6 +47,6 @@ public class CreateAssetBundles : EditorWindow
 		{
 			Directory.CreateDirectory(assetBundleDirectory);
 		}
-		BuildPipeline.BuildAssetBundles(assetBundleDirectory,bundles,BuildAssetBundleOptions.None, BuildTarget.StandaloneWindows);
+		BuildPipeline.BuildAssetBundles(assetBundleDirectory,bundles,BuildAssetBundleOptions.None, EditorUserBuildSettings.activeBuildTarget);
 	}
 }
