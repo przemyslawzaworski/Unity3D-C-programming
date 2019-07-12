@@ -196,3 +196,17 @@ int[,] MakeArray (int[,] A, int[,] B, int[,] C, int[,] D)
 
 
 ******************************
+
+// Function returns an array of all active loaded terrains and
+// sorts them with their original hierarchy position.
+Terrain[] LoadAndSortTerrains()
+{
+	Terrain[] foundObjects = FindObjectsOfType<Terrain>();
+	Terrain[] sortedObjects = new Terrain[foundObjects.Length];
+	for (int i=0; i<foundObjects.Length; i++)
+	{
+		int index = foundObjects[i].transform.GetSiblingIndex();
+		sortedObjects[index] = foundObjects[i];
+	}
+	return sortedObjects;
+}
