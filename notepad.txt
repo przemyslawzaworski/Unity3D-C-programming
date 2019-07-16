@@ -210,3 +210,27 @@ Terrain[] LoadAndSortTerrains()
 	}
 	return sortedObjects;
 }
+
+******************************
+
+#region Function returns an array of all active loaded terrains with certain layer and sorts them with their original hierarchy position.
+Terrain[] LoadAndSortTerrainsWithLayer(string name)
+{
+	Terrain[] foundObjects = FindObjectsOfType<Terrain>();
+	List<Terrain> proceededObjects = new List<Terrain>();
+	for (int i=0; i<foundObjects.Length; i++)
+	{
+		if (foundObjects[i].gameObject.layer == LayerMask.NameToLayer(name))
+		{
+			proceededObjects.Add(foundObjects[i]);
+		}
+	}
+	Terrain[] sortedObjects = new Terrain[proceededObjects.Count];
+	for (int j=0; j<proceededObjects.Count; j++)
+	{
+		int index = proceededObjects[j].transform.GetSiblingIndex();
+		sortedObjects[index] = proceededObjects[j];
+	}
+	return sortedObjects;
+}
+#endregion
