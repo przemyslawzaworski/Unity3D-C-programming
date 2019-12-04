@@ -1,0 +1,42 @@
+// Adressable Assets System with MEC (https://assetstore.unity.com/packages/tools/animation/more-effective-coroutines-free-54975)
+using System.Threading.Tasks;
+using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
+using System.Collections.Generic;
+using MEC;
+using System.Linq;
+using ResourceLocation = UnityEngine.ResourceManagement.ResourceLocations.IResourceLocation;
+
+public class AddressableManagerAsyncMEC : MonoBehaviour
+{
+	GameObject _Terrain = null;
+
+	IEnumerator<float> LoadAssetInstance (string path, System.Action<GameObject> instance) 
+	{
+		AsyncOperationHandle<IList<ResourceLocation>> resourceHandle = Addressables.LoadResourceLocationsAsync(path);
+		while (resourceHandle.Status != AsyncOperationStatus.Succeeded) yield return Timing.WaitForOneFrame;
+		IList<ResourceLocation> locations = resourceHandle.Result;
+		AsyncOperationHandle<GameObject> objectHandle = Addressables.InstantiateAsync(locations.First());
+		while (objectHandle.Status != AsyncOperationStatus.Succeeded) yield return Timing.WaitForOneFrame;
+		instance (objectHandle.Result); 
+		yield return 0.0f;
+	}
+
+	void UnloadAssetInstance (GameObject instance)
+	{
+		Addressables.ReleaseInstance(instance);
+	}
+	
+	void Update()
+	{
+		if (Input.GetKeyDown(KeyCode.O))
+		{
+			if (_Terrain == null) Timing.RunCoroutine(LoadAssetInstance("Assets/Prefabs/Rock01.prefab", value => _Terrain = value));
+		}
+		else if (Input.GetKeyDown(KeyCode.P))
+		{
+			if (_Terrain != null) UnloadAssetInstance(_Terrain);
+		}
+	}
+}
