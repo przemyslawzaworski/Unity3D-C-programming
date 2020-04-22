@@ -1,120 +1,70 @@
-﻿/*
-	PS4 controller input, assignment for return values from GetInput() :
-    Square   = 1
-    X        = 2
-    Circle   = 4
-    Triangle = 8
-    L1       = 16
-    R1       = 32
-    L2       = 64
-    R2       = 128
-    Share	 = 256
-    Options  = 512
-    L3       = 1024
-    R3       = 2048
-    PS       = 4096
-    PadPress = 8192
-*/
-
-/*
-DLL code, save as controller.c and compile: cl.exe /LD controller.c user32.lib gdi32.lib winmm.lib
-then copy DLL into Assets/Plugins and restart editor
-Only works if one gamepad is connected.
-*/
-
-/* 
-#include <windows.h>
-#include <mmsystem.h>
-
-JOYINFOEX joyinfo; 
-
-float Remap (unsigned long x) // remap from (0..65535) to (-1,1) 
-{
-	return (float) x / 65535.0f * 2.0f - 1.0f;
-}
-
-float InverseRemap (unsigned long x) // remap from (0..65535) to (1,-1)
-{
-	return (float) x / 65535.0f * (-2.0f) + 1.0f;
-}
-
-int IsControllerDetected ()
-{
-	return (joyGetPosEx(0, &joyinfo) == 0);
-}
-
-__declspec(dllexport) void Init()
-{
-	joyinfo.dwSize = sizeof(joyinfo);
-	joyinfo.dwFlags = JOY_RETURNALL;
-}
-
-__declspec(dllexport) unsigned long GetInput()
-{
-	return IsControllerDetected () ? joyinfo.dwButtons : 0;
-}
-
-__declspec(dllexport) unsigned long GetNumberOfPressedButtons()
-{
-	return IsControllerDetected () ? joyinfo.dwButtonNumber : 0;
-}
-
-__declspec(dllexport) float GetLeftStickHorizontal()
-{
-	return IsControllerDetected () ? Remap(joyinfo.dwXpos) : 0.0f;
-}
-
-__declspec(dllexport) float GetLeftStickVertical()
-{
-	return IsControllerDetected () ? InverseRemap(joyinfo.dwYpos) : 0.0f;
-}
-
-__declspec(dllexport) float GetRightStickHorizontal()
-{
-	return IsControllerDetected () ? Remap(joyinfo.dwZpos) : 0.0f;
-}
-
-__declspec(dllexport) float GetRightStickVertical()
-{
-	return IsControllerDetected () ? InverseRemap(joyinfo.dwRpos) : 0.0f;
-}
-*/
-
-using System;
+﻿using System;
 using UnityEngine;
 using System.Runtime.InteropServices;
 
-public class Controller : MonoBehaviour 
+public class Controller : MonoBehaviour
 {
-	[DllImport("controller", EntryPoint = "Init")]
-	static extern void Init ();
-	[DllImport("controller", EntryPoint = "GetInput")]
-	static extern uint GetInput ();
-	[DllImport("controller", EntryPoint = "GetNumberOfPressedButtons")]
-	static extern uint GetNumberOfPressedButtons ();	
-	[DllImport("controller", EntryPoint = "GetLeftStickHorizontal")]
-	static extern float GetLeftStickHorizontal ();
-	[DllImport("controller", EntryPoint = "GetLeftStickVertical")]
-	static extern float GetLeftStickVertical ();
-	[DllImport("controller", EntryPoint = "GetRightStickHorizontal")]
-	static extern float GetRightStickHorizontal ();
-	[DllImport("controller", EntryPoint = "GetRightStickVertical")]
-	static extern float GetRightStickVertical ();
+	[DllImport("winmm.dll")]
+	public static extern uint joyGetPosEx(uint uJoyID, ref JOYINFOEX pji);
+	
+	[StructLayout(LayoutKind.Sequential)]
+	public struct JOYINFOEX
+	{
+		public uint dwSize;
+		public uint dwFlags;
+		public uint dwXpos;
+		public uint dwYpos;
+		public uint dwZpos;
+		public uint dwRpos;
+		public uint dwUpos;
+		public uint dwVpos;
+		public uint dwButtons;
+		public uint dwButtonNumber;
+		public uint dwPOV;
+		public uint dwReserved1;
+		public uint dwReserved2;
+	}
 
-	private float _Deadzone = 0.05f;	
-	private float _TranslationSpeed = 0.5f;		
+	private JOYINFOEX joyinfo = new JOYINFOEX();
+	private float _Deadzone = 0.1f;
+	private float _TranslationSpeed = 0.5f;
 	private float _RotationSpeed = 2.0f;
 	private float _Yaw = 0.0f;
-	private float _Pitch = 0.0f;	
-	
-	void Start()
+	private float _Pitch = 0.0f;
+
+	float Remap (ulong x) // remap from (0..65535) to (-1,1) 
 	{
-		Init();
+		return (float) x / 65535.0f * 2.0f - 1.0f;
 	}
+
+	float InverseRemap (ulong x) // remap from (0..65535) to (1,-1)
+	{
+		return (float) x / 65535.0f * (-2.0f) + 1.0f;
+	}
+
+	void Init()
+	{
+		joyinfo.dwSize = (uint)Marshal.SizeOf(joyinfo);
+		joyinfo.dwFlags = (uint)(0x00000001 | 0x00000002 | 0x00000004 | 0x00000008 | 0x00000010 | 0x00000020 | 0x00000040 | 0x00000080);
+	}
+
+	bool IsControllerDetected { get {return(joyGetPosEx(0, ref joyinfo) == 0);} }
+
+	ulong GetInput { get {return IsControllerDetected ? joyinfo.dwButtons : 0;} }
+
+	ulong GetNumberOfPressedButtons { get {return IsControllerDetected  ? joyinfo.dwButtonNumber : 0;} }
+
+	float GetLeftStickHorizontal { get {return IsControllerDetected  ? Remap(joyinfo.dwXpos) : 0.0f;} }
+
+	float GetLeftStickVertical { get {return IsControllerDetected  ? InverseRemap(joyinfo.dwYpos) : 0.0f;} }
+
+	float GetRightStickHorizontal { get {return IsControllerDetected  ? Remap(joyinfo.dwZpos) : 0.0f;} }
+
+	float GetRightStickVertical { get {return IsControllerDetected  ? InverseRemap(joyinfo.dwRpos) : 0.0f;} }
 
 	void PrintState ()
 	{
-		switch (GetInput ())
+		switch (GetInput)
 		{
 			case 1:		Debug.Log("Pressed Square !"); break;
 			case 2:		Debug.Log("Pressed X !"); break;
@@ -132,21 +82,21 @@ public class Controller : MonoBehaviour
 			case 8192:	Debug.Log("Pressed PadPress !"); break;
 		}
 	}
-	
+
 	void Translation ()
 	{
-		float mx = GetLeftStickHorizontal ();
-		float mz = GetLeftStickVertical ();
+		float mx = GetLeftStickHorizontal;
+		float mz = GetLeftStickVertical;
 		if ((Mathf.Abs(mx) > _Deadzone) || (Mathf.Abs(mz) > _Deadzone))
 		{
 			transform.Translate(new Vector3(mx, 0.0f, mz) * _TranslationSpeed);
 		}
 	}
-	
+
 	void Rotation ()
 	{
-		float rx = GetRightStickHorizontal ();
-		float ry = GetRightStickVertical ();
+		float rx = GetRightStickHorizontal;
+		float ry = GetRightStickVertical;
 		if ((Mathf.Abs(rx) > _Deadzone) || (Mathf.Abs(ry) > _Deadzone)) 
 		{
 			_Yaw   += _RotationSpeed * rx;
@@ -154,11 +104,21 @@ public class Controller : MonoBehaviour
 			transform.eulerAngles = new Vector3(_Pitch, _Yaw, 0.0f);
 		}
 	}
-	
+
+	void Start()
+	{
+		Init();
+	}
+
 	void Update()
 	{
 		PrintState ();
 		Translation ();
 		Rotation ();
+	}
+
+	void OnGUI()
+	{
+		GUI.Label(new Rect(10, 10, 100, 20), IsControllerDetected.ToString());
 	}
 }
