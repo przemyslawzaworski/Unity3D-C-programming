@@ -213,7 +213,7 @@ Terrain[] LoadAndSortTerrains()
 
 ******************************
 
-#region Function returns an array of all active loaded terrains with certain layer and sorts them with their original hierarchy position.
+// Function returns an array of all active loaded terrains with certain layer and sorts them with their original hierarchy position.
 Terrain[] LoadAndSortTerrainsWithLayer(string name)
 {
 	Terrain[] foundObjects = FindObjectsOfType<Terrain>();
@@ -233,4 +233,31 @@ Terrain[] LoadAndSortTerrainsWithLayer(string name)
 	}
 	return sortedObjects;
 }
-#endregion
+
+******************************
+
+// Function converts trees from terrain component into standalone gameobjects.
+GameObject[] ConvertTreesToObjects(Terrain[] terrains, bool clear = true)
+{
+	List<GameObject> trees = new List<GameObject>();
+	GameObject parent = new GameObject();
+	parent.name = "Trees";
+	for (int i=0; i<terrains.Length; i++)
+	{
+		TerrainData data = terrains[i].terrainData;   
+		TreePrototype[] prototypes = data.treePrototypes;
+		foreach (TreeInstance instance in data.treeInstances)
+		{
+			Vector3 position = Vector3.Scale(instance.position, data.size) + terrains[i].transform.position;
+			GameObject tree = Instantiate(prototypes[instance.prototypeIndex].prefab, position, Quaternion.identity);
+			tree.transform.localScale = Vector3.Scale(tree.transform.localScale, new Vector3(instance.widthScale, instance.heightScale, instance.widthScale));
+			tree.transform.rotation = Quaternion.AngleAxis(instance.rotation * Mathf.Rad2Deg, Vector3.up);
+			tree.transform.parent = parent.transform;
+			trees.Add(tree);
+		}
+		if (clear) data.treeInstances = new TreeInstance[0];
+	}
+	return trees.ToArray();
+}
+
+******************************
