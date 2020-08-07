@@ -261,3 +261,16 @@ GameObject[] ConvertTreesToObjects(Terrain[] terrains, bool clear = true)
 }
 
 ******************************
+
+string GetHierarchyPath (GameObject src) 
+{
+	string name = src.name;
+	while (src.transform.parent != null) 
+	{
+		src = src.transform.parent.gameObject;
+		name = src.name + "/" + name;
+	}
+	return name;
+}
+
+******************************
