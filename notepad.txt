@@ -274,3 +274,10 @@ string GetHierarchyPath (GameObject src)
 }
 
 ******************************
+
+T ConvertStringToEnum<T> (string chars)
+{
+	return (T)System.Enum.Parse(typeof(T), chars, true); 
+}
+
+******************************
