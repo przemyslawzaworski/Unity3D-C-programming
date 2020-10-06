@@ -281,3 +281,34 @@ T ConvertStringToEnum<T> (string chars)
 }
 
 ******************************
+
+// Extract substring between two borders, example: 
+// Substring ("int[Element]", "[", "]") = Element
+string Substring (string src, string start, string end)
+{
+	if (!src.Contains(start) || !src.Contains(end)) return null;
+	int x = src.IndexOf(start) + start.Length;
+	int y = src.LastIndexOf(end);
+	return src.Substring(x, y - x);          
+}
+
+******************************
+
+// Copy field values between various classes (using System.Reflection)
+void FieldsCopy(Component source, Component destination)
+{
+	FieldInfo[] infos = source.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public);
+	for (int i = 0; i < infos.Length; i++)
+	{
+		try
+		{
+			destination.GetType().GetField(infos[i].Name).SetValue(destination, infos[i].GetValue(source));
+		}
+		catch (Exception e)
+		{
+			UnityEngine.Debug.LogError(e);
+		}
+	}
+}
+
+******************************
