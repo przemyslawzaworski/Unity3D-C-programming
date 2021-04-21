@@ -312,3 +312,41 @@ void FieldsCopy(Component source, Component destination)
 }
 
 ******************************
+
+void AddTag(string tag)
+{
+	UnityEngine.Object[] assets = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/TagManager.asset");
+	if ((assets != null) && (assets.Length > 0))
+	{
+		SerializedObject serializedObject = new SerializedObject(assets[0]);
+		SerializedProperty serializedProperty = serializedObject.FindProperty("tags");
+		for (int i = 0; i < serializedProperty.arraySize; ++i)
+		{
+			if (serializedProperty.GetArrayElementAtIndex(i).stringValue == tag) return; // Tag already present, nothing to do.
+		}
+		serializedProperty.InsertArrayElementAtIndex(0);
+		serializedProperty.GetArrayElementAtIndex(0).stringValue = tag;
+		serializedObject.ApplyModifiedProperties();
+		serializedObject.Update();
+	}
+}
+
+void AddLayer(string layer, int index)
+{
+	UnityEngine.Object[] assets = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/TagManager.asset");
+	if ((assets != null) && (assets.Length > 0))
+	{
+		SerializedObject serializedObject = new SerializedObject(assets[0]);
+		SerializedProperty serializedProperty = serializedObject.FindProperty("layers");
+		for (int i = 0; i < serializedProperty.arraySize; ++i)
+		{
+			if (serializedProperty.GetArrayElementAtIndex(i).stringValue == layer) return; // Layer already present, nothing to do.
+		}
+		serializedProperty.InsertArrayElementAtIndex(index);
+		serializedProperty.GetArrayElementAtIndex(index).stringValue = layer;
+		serializedObject.ApplyModifiedProperties();
+		serializedObject.Update();
+	}
+}
+
+******************************
