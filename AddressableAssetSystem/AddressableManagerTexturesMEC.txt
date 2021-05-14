@@ -1,0 +1,74 @@
+﻿// Install "Addressable Asset System" package.
+// Install MEC (https://assetstore.unity.com/packages/tools/animation/more-effective-coroutines-free-54975)
+// Mark textures as "Addressable".
+// Window -> Asset Management -> Addressables -> Groups -> Build -> Build Player Content
+// To measure memory usage in Editor, set "Window -> Asset Management -> Addressables -> Groups -> Play Mode Script -> Use Existing Build"
+using System.Collections.Generic;
+using MEC;
+using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
+
+public class AddressableManagerTexturesMEC : MonoBehaviour
+{
+	public AssetReferenceTexture2D[] Addressables;
+	private Texture2D[] _Textures;
+	private GameObject[] _Planes; 
+
+	IEnumerator<float> LoadTexture (AssetReferenceTexture2D addressable, System.Action<Texture2D> action)
+	{
+		AsyncOperationHandle<Texture2D> handle = addressable.LoadAssetAsync();
+		while (handle.Status != AsyncOperationStatus.Succeeded) yield return Timing.WaitForOneFrame;
+		action(handle.Result);
+		yield return 0.0f;
+	}
+
+	void ReleaseTexture (AssetReferenceTexture2D addressable)
+	{
+		addressable.ReleaseAsset();
+	}
+
+	IEnumerator<float> LoadTextures(AssetReferenceTexture2D[] addressables)
+	{
+		for (int i = 0; i < addressables.Length; i++)
+		{
+			if (_Textures[i] == null)
+			{
+				yield return Timing.WaitUntilDone (Timing.RunCoroutine (LoadTexture(addressables[i], value => _Textures[i] = value)));
+				_Planes[i].GetComponent<Renderer>().material.mainTexture = _Textures[i];
+			}
+		}
+		yield return 0.0f;
+	}	
+
+	void Start()
+	{
+		_Textures = new Texture2D[Addressables.Length];
+		_Planes = new GameObject[Addressables.Length];
+		for (int i = 0; i < Addressables.Length; i++)
+		{
+			_Planes[i] = GameObject.CreatePrimitive(PrimitiveType.Plane);
+			_Planes[i].GetComponent<Renderer>().material = new Material(Shader.Find("Sprites/Default"));
+		}
+	}
+
+	void Update()
+	{
+		if (Input.GetKeyDown(KeyCode.O))
+		{
+			Timing.RunCoroutine(LoadTextures(Addressables));
+		}
+		else if (Input.GetKeyDown(KeyCode.P))
+		{
+			for (int i = 0; i < Addressables.Length; i++)
+			{
+				if (_Textures[i] != null)
+				{
+					_Planes[i].GetComponent<Renderer>().material.mainTexture = null;
+					_Textures[i] = null;
+					ReleaseTexture(Addressables[i]);
+				}
+			}
+		}
+	}
+}
