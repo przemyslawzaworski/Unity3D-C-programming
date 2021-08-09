@@ -194,6 +194,21 @@ int[,] MakeArray (int[,] A, int[,] B, int[,] C, int[,] D)
 	return E;
 }
 
+Generic version:
+
+T[] MakeArray<T>(params T[][] arrays)
+{
+	int size = 0;
+	for (int i = 0; i < arrays.Length; i++) size += arrays[i].Length;
+	T[] array = new T[size];
+	int index = 0;
+	for (int x = 0; x < arrays.Length; x++)
+	{
+		arrays[x].CopyTo(array, index);
+		index += arrays[x].Length;
+	}
+	return array;
+}
 
 ******************************
 
