@@ -365,3 +365,114 @@ void AddLayer(string layer, int index)
 }
 
 ******************************
+
+Clear render texture color buffer:
+
+void Clear (RenderTexture rt)
+{
+	RenderTexture currentActiveRT = RenderTexture.active;
+	RenderTexture.active = rt;
+	GL.Clear(false, true, new Color(0.0f, 0.0f, 0.0f, 1.0f));
+	RenderTexture.active = currentActiveRT;
+}
+
+******************************
+
+C# show private fields. Example class with private Texture2D:
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class GenerateTexture : MonoBehaviour
+{
+	private Texture2D _Sphere;
+
+	void Start()
+	{
+		_Sphere = new Texture2D(256, 256);
+		for (int y = 0; y < _Sphere.height; y++)
+		{
+			for (int x = 0; x < _Sphere.width; x++)
+			{
+				Vector2 uv = new Vector2(x / (float) _Sphere.width, y / (float) _Sphere.height);
+				float s = new Vector2(uv.x - 0.5f, uv.y - 0.5f).magnitude - 0.1f;
+				float c = System.Convert.ToSingle(0.0f >= s);
+				Color color = new Color(c, 0.0f, 0.0f, 1.0f);
+				_Sphere.SetPixel(x, y, color);
+			}
+		}
+		_Sphere.Apply();
+	}
+}
+
+Access to this texture from external script:
+
+using UnityEngine;
+using System.Reflection; 
+using System;
+
+public class Tools : MonoBehaviour
+{
+	System.Object ReadValue(string className, string assemblyName, string fieldName)
+	{
+		Type type = Type.GetType(className + "," + assemblyName);
+		Component component = FindObjectOfType(type) as Component; 
+		BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
+		FieldInfo fieldInfo = component.GetType().GetField(fieldName, flags); 
+		System.Object result = fieldInfo.GetValue(component);
+		return result;
+	}
+
+	Texture2D _Texture;
+
+	void Start()
+	{
+		_Texture = (Texture2D)ReadValue("GenerateTexture", "Assembly-CSharp", "_Sphere");
+	}
+
+	void OnGUI()
+	{
+		GUI.DrawTexture(new Rect(0, 0, 512, 512), _Texture, ScaleMode.ScaleToFit, true, 1.0F);
+	}
+}
+
+******************************
+
+Example with camera rendering on demand (camera renders in every second, not every frame, to save performance in specific scenario):
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class CustomCamera : MonoBehaviour
+{
+	public Camera SecondCamera;
+	float _Timer = 0.0f;
+	RenderTexture _RenderTexture;
+
+	void Start()
+	{
+		_RenderTexture = new RenderTexture(256, 256, 16, RenderTextureFormat.ARGB32);
+		SecondCamera.targetTexture = _RenderTexture;
+		SecondCamera.enabled = false;
+		this.GetComponent<Renderer>().material.mainTexture = _RenderTexture;
+	}
+
+	void Update()
+	{
+		_Timer += Time.deltaTime;
+		if (_Timer > 1.0f)
+		{
+			_Timer = 0.0f;
+			SecondCamera.Render();
+		}
+	}
+
+	void OnDestroy()
+	{
+		_RenderTexture.Release();
+	}
+}
+
+******************************
