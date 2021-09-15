@@ -476,3 +476,62 @@ public class CustomCamera : MonoBehaviour
 }
 
 ******************************
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Rendering;
+
+public class MeshCombine : MonoBehaviour
+{
+	public GameObject Source;
+
+	void Start()
+	{
+		StartCoroutine("Execute");
+	}
+
+	IEnumerator Execute()
+	{
+		if (Source == null) yield break;
+		GameObject destination = new GameObject();
+		destination.name = "CombinedMesh";
+		MeshFilter filter = destination.AddComponent<MeshFilter>();
+		MeshRenderer renderer = destination.AddComponent<MeshRenderer>();
+		Mesh mesh = new Mesh();
+		mesh.indexFormat = IndexFormat.UInt32;
+		mesh.name = "CombinedMesh";
+		List<Vector3> vertices = new List<Vector3>();
+		List<int> triangles = new List<int>();
+		MeshFilter[] filters = Source.GetComponentsInChildren<MeshFilter>();
+		int offset = 0;
+		for (int i = 0; i < filters.Length; i++)
+		{
+			string objectName = filters[i].gameObject.name;
+			if (objectName.Contains("LOD1") || objectName.Contains("LOD2")) continue;
+			Vector3[] verts = filters[i].sharedMesh.vertices;
+			int[] tris = filters[i].sharedMesh.triangles;
+			Transform transform = filters[i].gameObject.transform;
+			for (int j = 0; j < verts.Length; j++)
+			{
+				Vector3 position = verts[j];
+				position = transform.TransformPoint(position);
+				verts[j] = position;
+			}
+			for (int k = 0; k < tris.Length; k++)
+			{
+				tris[k] = tris[k] + offset;
+			}
+			vertices.AddRange(verts);
+			triangles.AddRange(tris);
+			offset = offset + verts.Length;
+			yield return new WaitForEndOfFrame();
+			Debug.Log("Processed: " + (System.Convert.ToSingle(i) / System.Convert.ToSingle(filters.Length) * 100.0f).ToString() + " percents.");
+		}
+		mesh.vertices = vertices.ToArray();
+		mesh.triangles = triangles.ToArray();
+		mesh.RecalculateNormals();
+		filter.sharedMesh = mesh;
+		renderer.material = new Material(Shader.Find("Standard"));
+	}
+}
