@@ -535,3 +535,14 @@ public class MeshCombine : MonoBehaviour
 		renderer.material = new Material(Shader.Find("Standard"));
 	}
 }
+
+******************************
+
+// Is gameobject a prefab ?
+bool IsPrefab(GameObject source)
+{
+	PrefabAssetType type = PrefabUtility.GetPrefabAssetType(source);
+	return (type == PrefabAssetType.Regular || type == PrefabAssetType.Model || type == PrefabAssetType.Variant);
+}
+
+******************************
