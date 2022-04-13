@@ -216,7 +216,7 @@ public class KeyboardLayout : MonoBehaviour
 	{
 		StringBuilder stringBuilder = new StringBuilder(9);
 		GetKeyboardLayoutName(stringBuilder);
-		string result = stringBuilder.ToString();
+		string result = stringBuilder.ToString().ToLower();
 		foreach(KeyValuePair<string, string> entry in dictionary)
 		{
 			if (entry.Key == result) return entry.Value;
