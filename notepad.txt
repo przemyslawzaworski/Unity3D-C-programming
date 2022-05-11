@@ -546,3 +546,48 @@ bool IsPrefab(GameObject source)
 }
 
 ******************************
+
+void SetFbxDefaultMaterialForModel(UnityEngine.Object target, Material material)
+{
+	string assetPath = AssetDatabase.GetAssetPath(target);
+	ModelImporter modelImporter = AssetImporter.GetAtPath(assetPath) as ModelImporter;
+	SerializedObject serializedObject = new SerializedObject(modelImporter);
+	SerializedProperty materials = serializedObject.FindProperty("m_Materials");
+	SerializedProperty externalObjects = serializedObject.FindProperty("m_ExternalObjects");
+	for (int i = 0; i < materials.arraySize; i++)
+	{
+		SerializedProperty id = materials.GetArrayElementAtIndex(i);
+		string name = id.FindPropertyRelative("name").stringValue;
+		string type = id.FindPropertyRelative("type").stringValue;
+		string assembly = id.FindPropertyRelative("assembly").stringValue;
+		SerializedProperty materialProperty = null;
+		for (int j = 0; j < externalObjects.arraySize; j++)
+		{
+			SerializedProperty serializedProperty = externalObjects.GetArrayElementAtIndex(j);
+			string externalName = serializedProperty.FindPropertyRelative("first.name").stringValue;
+			string externalType = serializedProperty.FindPropertyRelative("first.type").stringValue;
+			if (externalType == type && externalName == name)
+			{
+				materialProperty = serializedProperty.FindPropertyRelative("second");
+				break;
+			}
+		}
+		if (materialProperty == null)
+		{
+			int index = externalObjects.arraySize++;
+			SerializedProperty serializedProperty = externalObjects.GetArrayElementAtIndex(index);
+			serializedProperty.FindPropertyRelative("first.name").stringValue = name;
+			serializedProperty.FindPropertyRelative("first.type").stringValue = type;
+			serializedProperty.FindPropertyRelative("first.assembly").stringValue = assembly;
+			serializedProperty.FindPropertyRelative("second").objectReferenceValue = material;
+		}
+		else
+		{
+			materialProperty.objectReferenceValue = material;
+		}
+	}
+	serializedObject.ApplyModifiedPropertiesWithoutUndo();
+	modelImporter.SaveAndReimport();
+}
+
+******************************
