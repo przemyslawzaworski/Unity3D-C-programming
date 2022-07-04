@@ -591,3 +591,60 @@ void SetFbxDefaultMaterialForModel(UnityEngine.Object target, Material material)
 }
 
 ******************************
+
+// Get array elements values from private fields
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using System;
+using System.Reflection;
+using System.Linq; 
+
+public class Tree : System.Object
+{
+	public string Description = "";
+}
+
+public class Forest : MonoBehaviour
+{
+	private Tree[] _Trees;
+	private static readonly int _Layer = 10;
+
+	void Awake()
+	{
+		Tree apple = new Tree();
+		apple.Description = "Apple Tree";
+		Tree pear = new Tree();
+		pear.Description = "Pear Tree";
+		_Trees = new Tree[] {apple, pear};
+	}
+}
+
+public class ArrayTest : MonoBehaviour
+{
+	System.Object GetField(Component component, string fieldName, BindingFlags bindingFlags)
+	{
+		return component.GetType().GetField(fieldName, bindingFlags).GetValue(component);
+	}
+
+	System.Object GetStaticField(Type type, string fieldName, BindingFlags bindingFlags)
+	{
+		return type.GetField(fieldName, bindingFlags).GetValue(null);
+	}
+
+	void Start()
+	{
+		Component component = this.gameObject.AddComponent<Forest>();
+		Type type = Type.GetType("Forest,Assembly-CSharp");
+		Array array = (Array)GetField(component, "_Trees", BindingFlags.Instance | BindingFlags.NonPublic);
+		for (int i = 0; i < array.Length; i++)
+		{
+			System.Object element = array.GetValue(i);
+			Debug.Log(element.GetType().GetField("Description").GetValue(element));
+		}
+		Debug.Log((int)GetStaticField(type, "_Layer", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Static));
+	}
+}
+
+******************************
