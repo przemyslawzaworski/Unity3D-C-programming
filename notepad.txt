@@ -648,3 +648,19 @@ public class ArrayTest : MonoBehaviour
 }
 
 ******************************
+
+// Get current terrain at the given position defined in world space (vec3).
+
+Terrain GetCurrentTerrain (Terrain[] terrains, Vector3 vec3)
+{
+	for (int i = 0; i < terrains.Length; i++)
+	{
+		Terrain terrain = terrains[i];
+		Vector3 p = terrain.transform.position;
+		Vector3 s = terrain.terrainData.size;
+		if (vec3.x > p.x && vec3.x < (p.x + s.x) && vec3.z > p.z && vec3.z < (p.z + s.z)) return terrain;
+	}
+	return null;
+}
+
+******************************
