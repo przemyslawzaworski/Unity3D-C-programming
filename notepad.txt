@@ -664,3 +664,24 @@ Terrain GetCurrentTerrain (Terrain[] terrains, Vector3 vec3)
 }
 
 ******************************
+
+// Returns an array of all components of Type type (visible in hierarchy, both active and inactive) from all loaded scenes.
+
+public static T[] FindComponentsOfType<T>() where T : Object
+{
+	List<T> results = new List<T>();
+	Object[] objects = Resources.FindObjectsOfTypeAll(typeof(T));
+	for (int i = 0; i < objects.Length; i++)
+	{
+		T typedObject = (T)objects[i];
+		Component component = typedObject as Component;
+		if (component != null)
+		{
+			if (component.gameObject.hideFlags == HideFlags.None)
+				results.Add(typedObject);
+		}
+	}
+	return results.ToArray();
+}
+
+******************************
