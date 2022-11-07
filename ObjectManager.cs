@@ -1,4 +1,4 @@
-﻿// Example how to read/write objects from/to file, without serialization/deserialization.
+// Two examples how to read/write objects from/to file, without serialization/deserialization.
 
 using System.Collections;
 using System.Collections.Generic;
@@ -21,7 +21,31 @@ public class ObjectManager : MonoBehaviour
 	public enum State {Write, Read}	
 	public State Mode = State.Write;
 
-	void SaveObjectToFile (System.Object structure, string path)
+	// Method 1:
+	void WriteObjectToFile<T> (T structure, string path)
+	{
+		int size = Marshal.SizeOf(structure);
+		byte[] bytes = new byte[size];
+		GCHandle handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
+		IntPtr ptr = handle.AddrOfPinnedObject();
+		Marshal.StructureToPtr(structure, ptr, false);
+		handle.Free();
+		File.WriteAllBytes (path, bytes);
+	}
+
+	T ReadObjectFromFile<T> (string path)
+	{
+		byte[] bytes = File.ReadAllBytes (path);
+		GCHandle handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
+		IntPtr ptr = handle.AddrOfPinnedObject();
+		T structure = (T)Marshal.PtrToStructure(ptr, typeof(T));
+		handle.Free();
+		return structure;
+	}
+	///////////////////////////////////////////////////////////////
+
+	// Method 2:
+	void SaveObjectToFile<T> (T structure, string path)
 	{
 		int size = Marshal.SizeOf(structure);
 		byte[] bytes = new byte[size];
@@ -42,6 +66,7 @@ public class ObjectManager : MonoBehaviour
 		Marshal.FreeHGlobal(ptr);
 		return structure;
 	}
+	///////////////////////////////////////////////////////////////
 
 	void Start()
 	{
@@ -50,12 +75,14 @@ public class ObjectManager : MonoBehaviour
 			Tree tree = new Tree();
 			tree.Title = "Apple";
 			tree.Values = new int[5] {8, 16, 33, 47, 99};
-			SaveObjectToFile (tree, Path.Combine(Application.streamingAssetsPath, "test.bin"));
+			WriteObjectToFile (tree, Path.Combine(Application.streamingAssetsPath, "test.bin"));
+			//SaveObjectToFile (tree, Path.Combine(Application.streamingAssetsPath, "test.bin"));
 		}
 
 		if (Mode == State.Read)
 		{
-			Tree tree = LoadObjectFromFile<Tree> (Path.Combine(Application.streamingAssetsPath, "test.bin"));
+			Tree tree = ReadObjectFromFile<Tree> (Path.Combine(Application.streamingAssetsPath, "test.bin"));
+			//Tree tree = LoadObjectFromFile<Tree> (Path.Combine(Application.streamingAssetsPath, "test.bin"));
 			Debug.Log(tree.Title);
 			for (int i = 0; i < tree.Values.Length; i++) Debug.Log(tree.Values[i]);
 		}
