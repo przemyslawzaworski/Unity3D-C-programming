@@ -5,8 +5,11 @@ using UnityEngine;
 // To give proper results, mesh must be closed (have volume) !
 public class PointInMesh : MonoBehaviour
 {
+	[Header("Input point")]
 	public Transform Source; // input point
+	[Header("Destination Mesh")]
 	public Transform Destination; // destination mesh transform
+	[Header("Select 1 || 2 || 3 || 4")]
 	public int Function = 1;
 
 	private Vector3[] _Vertices;
@@ -19,7 +22,7 @@ public class PointInMesh : MonoBehaviour
 	// rd = ray direction
 	// a,b,c = triangle vertices in world space
 	// hit = optionally get ray hit position in world space	
-	bool RayTriangleIntersection(Vector3 ro, Vector3 rd, Vector3 a, Vector3 b, Vector3 c, out Vector3 hit)
+	bool RayTriangleIntersection (Vector3 ro, Vector3 rd, Vector3 a, Vector3 b, Vector3 c, out Vector3 hit)
 	{
 		float epsilon = 0.0000001f;
 		hit = new Vector3(0f, 0f, 0f);
@@ -47,7 +50,7 @@ public class PointInMesh : MonoBehaviour
 	// transform = mesh transform
 	// vertices = mesh vertices
 	// triangles = mesh triangles (indices)
-	bool IsPointInsideMesh(Vector3 position, Transform transform, Vector3[] vertices, int[] triangles)
+	bool IsPointInsideMesh (Vector3 position, Transform transform, Vector3[] vertices, int[] triangles)
 	{
 		Vector3 epsilon = new Vector3(0.001f, 0.001f, 0.001f);
 		Vector3 direction = Vector3.Normalize(Random.insideUnitSphere + epsilon);
@@ -70,7 +73,7 @@ public class PointInMesh : MonoBehaviour
 	// vertices = mesh vertices
 	// triangles = mesh triangles (indices)	
 	// position = input point in world space
-	bool IsPointInsideMesh(Transform transform, Vector3[] vertices, int[] triangles, Vector3 position)
+	bool IsPointInsideMesh (Transform transform, Vector3[] vertices, int[] triangles, Vector3 position)
 	{
 		Vector3 epsilon = new Vector3(0.001f, 0.001f, 0.001f);
 		Vector3 direction = Vector3.Normalize(Random.insideUnitSphere + epsilon);
@@ -129,6 +132,56 @@ public class PointInMesh : MonoBehaviour
 		return (intersections % 2 == 1);
 	}
 
+	// Triangle Signed Distance Function
+	// https://iquilezles.org/articles/distfunctions/
+	float TriangleSDF (Vector3 p, Vector3 a, Vector3 b, Vector3 c)
+	{
+		Vector3 ba = b - a; 
+		Vector3 pa = p - a;
+		Vector3 cb = c - b; 
+		Vector3 pb = p - b;
+		Vector3 ac = a - c; 
+		Vector3 pc = p - c;
+		Vector3 nm = Vector3.Cross(ba, ac);
+		float sa = Mathf.Sign(Vector3.Dot(Vector3.Cross(ba, nm), pa));
+		float sb = Mathf.Sign(Vector3.Dot(Vector3.Cross(cb, nm), pb));
+		float sc = Mathf.Sign(Vector3.Dot(Vector3.Cross(ac, nm), pc));
+		Vector3 va = ba * Mathf.Clamp(Vector3.Dot(ba, pa) / Vector3.Dot(ba, ba), 0.0f, 1.0f) - pa;
+		Vector3 vb = cb * Mathf.Clamp(Vector3.Dot(cb, pb) / Vector3.Dot(cb, cb), 0.0f, 1.0f) - pb;
+		Vector3 vc = ac * Mathf.Clamp(Vector3.Dot(ac, pc) / Vector3.Dot(ac, ac), 0.0f, 1.0f) - pc;
+		float m1 = Mathf.Min(Mathf.Min(Vector3.Dot(va, va), Vector3.Dot(vb, vb)), Vector3.Dot(vc, vc));
+		float m2 = Vector3.Dot(nm, pa) * Vector3.Dot(nm, pa) / Vector3.Dot(nm, nm);
+		return Mathf.Sqrt(sa + sb + sc < 2.0 ? m1 : m2);
+	}
+
+	// Fourth method:
+	// Calculate signed distance field from triangle mesh.
+	// Distance between point located inside mesh and the closest triangle has negative sign.
+	bool IsPointInsideMesh (Vector3 position, Transform transform, Vector3[] vertices, int[] triangles, out float minimalDistance)
+	{
+		minimalDistance = 1e9f;
+		float currentSign = 0.0f;
+		for (int i = 0; i < triangles.Length; i += 3)
+		{
+			Vector3 a = transform.TransformPoint(vertices[triangles[i + 0]]); // from local space to world space
+			Vector3 b = transform.TransformPoint(vertices[triangles[i + 1]]); // from local space to world space
+			Vector3 c = transform.TransformPoint(vertices[triangles[i + 2]]); // from local space to world space
+			Vector3 ba = b - a;
+			Vector3 ca = c - a;
+			float currentDistance = TriangleSDF (position, a, b, c);
+			if (currentDistance < minimalDistance)
+			{
+				Vector3 triangleNormal = Vector3.Normalize(Vector3.Cross(ba, ca));
+				Vector3 triangleCenter = (a + b + c) / 3.0f;
+				Vector3 direction = Vector3.Normalize(triangleCenter - position);
+				currentSign = -1.0f * System.Math.Sign(Vector3.Dot(direction, triangleNormal));
+				minimalDistance = currentDistance;
+			}
+		}
+		minimalDistance = minimalDistance * currentSign;
+		return currentSign < 0.0f;
+	}
+
 	void Start()
 	{
 		Mesh mesh = Destination.gameObject.GetComponent<MeshFilter>().sharedMesh;
@@ -149,6 +202,9 @@ public class PointInMesh : MonoBehaviour
 				break;
 			case 3:
 				Debug.Log(IsPointInsideCollider (Source.position, _MeshCollider));
+				break;
+			case 4:
+				Debug.Log(IsPointInsideMesh(Source.position, Destination, _Vertices, _Triangles, out float sdf));
 				break;
 		}
 	}
