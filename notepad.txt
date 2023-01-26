@@ -685,3 +685,15 @@ public static T[] FindComponentsOfType<T>() where T : Object
 }
 
 ******************************
+
+void ClearRenderTexture3D (RenderTexture renderTexture)
+{
+	RenderTexture current = RenderTexture.active;
+	RenderTexture.active = renderTexture;
+	Graphics.SetRenderTarget(renderTexture, 0, CubemapFace.Unknown, -1);
+	GL.Clear(true, true, Color.clear);
+	Graphics.SetRenderTarget(current, 0, CubemapFace.Unknown, -1);
+}
+
+******************************
+
