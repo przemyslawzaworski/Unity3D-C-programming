@@ -697,3 +697,140 @@ void ClearRenderTexture3D (RenderTexture renderTexture)
 
 ******************************
 
+// Steam P2P
+
+using UnityEngine;
+using Steamworks;
+
+public class SteamNetwork
+{
+    public CSteamID Sender;
+
+    private Callback<P2PSessionRequest_t> _P2PSessionRequest;
+
+    public void Init()
+    {
+        _P2PSessionRequest = Callback<P2PSessionRequest_t>.Create(OnP2PSessionRequest);
+    }
+
+    public void Release()
+    {
+        if (_P2PSessionRequest != null)
+        {
+            _P2PSessionRequest.Dispose();
+        }
+    }
+
+    public void SendData(CSteamID receiver, byte[] bytes) // maximum size of byte array is 1 megabyte
+    {
+        SteamNetworking.SendP2PPacket(receiver, bytes, (uint)bytes.Length, EP2PSend.k_EP2PSendReliable);
+    }
+
+    public byte[] ReceiveData()
+    {
+        if (SteamNetworking.IsP2PPacketAvailable(out uint size))
+        {
+            byte[] bytes = new byte[size];
+            SteamNetworking.ReadP2PPacket(bytes, size, out uint bytesRead, out CSteamID remoteId);
+            return bytes;
+        }
+        else
+        {
+            return new byte[0];
+        }
+    }
+
+    void OnP2PSessionRequest(P2PSessionRequest_t request)
+    {
+        CSteamID clientId = request.m_steamIDRemote;
+        if (clientId == Sender)
+        {
+            Debug.Log("Request received: " + clientId);
+            SteamNetworking.AcceptP2PSessionWithUser(clientId);
+        }
+        else
+        {
+            Debug.LogWarning("Unexpected session request from " + clientId);
+        }
+    }
+
+    public byte[][] ArraySplit(byte[] inputArray, int segmentSize)
+    {
+        if ((inputArray == null) || (segmentSize <= 0)) return new byte[0][];
+        int numSegments = (int)System.Math.Ceiling((double)inputArray.Length / segmentSize);
+        byte[][] result = new byte[numSegments][];
+        for (int i = 0; i < numSegments; i++)
+        {
+            int segmentLength = System.Math.Min(segmentSize, inputArray.Length - i * segmentSize);
+            byte[] segment = new byte[segmentLength];
+            System.Array.Copy(inputArray, i * segmentSize, segment, 0, segmentLength);
+            result[i] = segment;
+        }
+        return result;
+    }
+
+    public byte[] ArrayConcat(params byte[][] arrays)
+    {
+        int size = 0;
+        for (int i = 0; i < arrays.Length; i++)
+        {
+            size += arrays[i].Length;
+        }
+        byte[] array = new byte[size];
+        int index = 0;
+        for (int x = 0; x < arrays.Length; x++)
+        {
+            arrays[x].CopyTo(array, index);
+            index += arrays[x].Length;
+        }
+        return array;
+    }
+}
+
+// Test:
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using Steamworks;
+
+public class SteamNetworkTest : MonoBehaviour
+{
+    public CSteamID Sender;
+    public CSteamID Receiver;
+
+    SteamNetwork _SteamNetwork;
+    string _Text = "";
+    string _Output = "";
+
+    void Start()
+    {
+        _SteamNetwork = new SteamNetwork();
+        _SteamNetwork.Sender = Sender;
+        _SteamNetwork.Init();
+    }
+
+    void OnGUI()
+    {
+        _Text = GUI.TextField(new Rect(10, 10, 300, 20), _Text, 256);
+        GUI.Label(new Rect(10, 100, 600, 100), _Output);
+        if (GUI.Button(new Rect(400, 10, 150, 30), "Send message"))
+        {
+            _SteamNetwork.SendData(Receiver, System.Text.Encoding.ASCII.GetBytes(_Text));
+            _Output = _Output + _Text + System.Environment.NewLine;
+        }
+        if (GUI.Button(new Rect(600, 10, 150, 30), "Receive message"))
+        {
+            byte[] bytes = _SteamNetwork.ReceiveData();
+            _Output = _Output + System.Text.Encoding.ASCII.GetString(bytes) + System.Environment.NewLine;
+        }
+    }
+
+    void OnDestroy()
+    {
+        _SteamNetwork.Release();
+    }
+}
+
+******************************
+
