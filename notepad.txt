@@ -834,3 +834,24 @@ public class SteamNetworkTest : MonoBehaviour
 
 ******************************
 
+RaycastHit[] RaycastAll(Vector3 origin, Vector3 direction, float maxDistance, LayerMask layerMask, int maxHits)
+{
+	List<RaycastHit> hits = new List<RaycastHit>();
+	float distance = maxDistance;
+	for (int i = 0; i < maxHits; i++)
+	{
+		if (Physics.Raycast(origin, direction, out RaycastHit hit, distance, layerMask))
+		{
+			hits.Add(hit);
+			distance -= hit.distance;
+			origin = hit.point + direction.normalized * 0.001f;
+		}
+		else
+		{
+			break;
+		}
+	}
+	return hits.ToArray();
+}
+
+******************************
