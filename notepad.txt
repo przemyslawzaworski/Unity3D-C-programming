@@ -855,3 +855,33 @@ RaycastHit[] RaycastAll(Vector3 origin, Vector3 direction, float maxDistance, La
 }
 
 ******************************
+
+// Equivalent for Physics.Raycast with QueryTriggerInteraction.Ignore
+RaycastHit RaycastWithoutTriggers(Vector3 origin, Vector3 direction, float maxDistance, LayerMask layerMask)
+{
+	RaycastHit hit = new RaycastHit();
+	float distance = maxDistance;
+	while (distance > 0f)
+	{
+		if (Physics.Raycast(origin, direction, out hit, distance, layerMask))
+		{
+			if (hit.collider.isTrigger == true)
+			{
+				distance -= hit.distance;
+				origin = hit.point + direction.normalized * 0.001f;
+				continue;
+			}
+			else
+			{
+				return hit;
+			}
+		}
+		else
+		{
+			break;
+		}
+	}
+	return hit;
+}
+
+******************************
