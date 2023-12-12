@@ -78,7 +78,7 @@ public class SunPositionCalculator : MonoBehaviour
 	Vector2 SunPosition()
 	{
 		float verticalAngle = (float) SolarElevation();
-		float horizontalAngle = (float) SolarAzimuth();
+		float horizontalAngle = 180.0f + (float) SolarAzimuth(); // add 180 because Unity calcs angle from south (-Z)
 		return new Vector2(verticalAngle, horizontalAngle);
 	}
 
