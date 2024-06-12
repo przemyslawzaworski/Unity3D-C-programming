@@ -885,3 +885,20 @@ RaycastHit RaycastWithoutTriggers(Vector3 origin, Vector3 direction, float maxDi
 }
 
 ******************************
+
+// Returns the smallest angle between the vectors, in degrees (Vector3.Angle)
+float Angle (Vector3 from, Vector3 to)
+{
+	float m = Mathf.Sqrt(Vector3.Dot(from, from) * Vector3.Dot(to, to));
+	return Mathf.Acos(Vector3.Dot(from, to) / m) * 57.29578f;
+}
+
+// Projects a vector onto another vector (Vector3.Project)
+Vector3 Project(Vector3 length, Vector3 direction) 
+{
+	float a = Vector3.Dot(length, direction);
+	float b = Vector3.Dot(direction, direction);
+	return direction * (a / b);
+}
+
+******************************
