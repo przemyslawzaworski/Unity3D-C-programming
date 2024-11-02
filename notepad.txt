@@ -989,3 +989,20 @@ Quaternion LookRotation(Vector3 forward, Vector3 upwards)
 }
 
 ******************************
+
+Mesh CopyMesh(Mesh source)
+{ 
+	Mesh destination = new Mesh();
+	Mesh.MeshDataArray meshData = Mesh.AcquireReadOnlyMeshData(source);
+	Mesh.ApplyAndDisposeWritableMeshData(meshData, destination);     
+	return destination;
+}
+
+RenderTexture CopyRenderTexture(RenderTexture source)
+{
+	RenderTexture destination = new RenderTexture(source.descriptor);
+	Graphics.CopyTexture(source, destination);
+	return destination;
+}
+
+******************************
